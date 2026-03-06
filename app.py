@@ -8,16 +8,16 @@ load_dotenv()
 
 app = Flask(__name__)
 
-def get_groq_client():
-    api_key = os.environ.get("GROQ_API_KEY")
-    if not api_key:
+# Fetch the Groq API key from environment variables
+api_key = os.environ.get("GROQ_API_KEY")
+
+try:
+    groq_client = Groq(api_key=api_key) if api_key else None
+    if not groq_client:
         print("Warning: GROQ_API_KEY not found in environment variables.")
-        return None
-    try:
-        return Groq(api_key=api_key)
-    except Exception as e:
-        print(f"Error initializing Groq client: {e}")
-        return None
+except Exception as e:
+    groq_client = None
+    print(f"Error initializing Groq client: {e}")
 
 # Resume Data
 resume_data = {
@@ -108,8 +108,7 @@ def index():
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    client = get_groq_client()
-    if not client:
+    if not groq_client:
         return jsonify({"response": "Chat service is temporarily unavailable due to API initialization errors."}), 500
 
     data = request.json
@@ -119,7 +118,7 @@ def chat():
         return jsonify({"response": "Please enter a message."}), 400
 
     try:
-        chat_completion = client.chat.completions.create(
+        chat_completion = groq_client.chat.completions.create(
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_message}
