@@ -184,10 +184,13 @@
                     const data = await response.json();
                     
                     // Remove loading and add real response
-                    document.getElementById(loadingId).remove();
-                    addMessage(data.response, 'bot');
+                    const loadingElem = document.getElementById(loadingId);
+                    if (loadingElem) loadingElem.remove();
+                    addMessage(data.response || "No response.", 'bot');
                 } catch (error) {
-                    document.getElementById(loadingId).remove();
+                    const loadingElem = document.getElementById(loadingId);
+                    if (loadingElem) loadingElem.remove();
+                    console.error("Chat Error:", error);
                     addMessage("Error connecting to server.", 'bot');
                 }
             };
